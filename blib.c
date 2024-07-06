@@ -1,20 +1,20 @@
 #include <stdlib.h>
 #include <wchar.h>
 
-// generate backing array with size
-struct bgrid* bgen(int width, int height);
+// allocate backing array with size
+struct bgrid* balloc(int width, int height);
 
 // clear backing
-void bres(struct bgrid *grid);
+void bclear(struct bgrid *grid);
 
 // set point (x, y) to bool/int v
 void bset(struct bgrid *grid, int x, int y, int v);
 
-// compute braille character at x, y (in characters, not dots)
-wchar_t bat(struct bgrid *grid, int x, int y);
+// compute braille character at x, y (in characters)
+wchar_t bchar(struct bgrid *grid, int x, int y);
 
-// delete backing array
-void bdel(struct bgrid *grid);
+// free backing array & structure
+void bfree(struct bgrid *grid);
 
 // braille grid structure
 struct bgrid{
@@ -22,7 +22,7 @@ struct bgrid{
 	int width, height, size;
 };
 
-struct bgrid* bgen(int width, int height){
+struct bgrid* balloc(int width, int height){
 	struct bgrid *new = malloc(sizeof(struct bgrid));
 	new -> width = (1+(width-1)/2)<<1;
 	new -> height = (1+(height-1)/4)<<2;
@@ -31,7 +31,7 @@ struct bgrid* bgen(int width, int height){
 	return new;
 }
 
-void bres(struct bgrid *grid){
+void bclear(struct bgrid *grid){
 	for(int i=0; i<grid->size; ++i) grid -> grid[i] = 0;
 }
 
@@ -44,23 +44,22 @@ void bset(struct bgrid *grid, int x, int y, int v){
 	_bwr(grid->grid, x + y*grid->width, v);
 }
 
-int _bget(unsigned int *grid, int coord){
+int _bgt(unsigned int *grid, int coord){
 	return (grid[coord>>5] >> (coord & 31)) & 1;
 }
 
-const int _ptmap[8] = {0, 3, 1, 4, 2, 5, 6, 7};
+const int _ptmap = 0x76524130;
 
-wchar_t bat(struct bgrid *grid, int x, int y){
+wchar_t bchar(struct bgrid *grid, int x, int y){
 	wchar_t ret = 0x2800;
 	int base = (x<<1) + (y<<2)*grid->width;
-	const int *p = _ptmap;
 
 	for(int i=0; i<8; base += grid->width*(i&1), ++i)
-		ret |= _bget(grid->grid, base + (i&1)) << *p, ++p;
+		ret |= _bgt(grid->grid, base + (i&1)) << ((_ptmap >> (i<<2))&7);
 
 	return ret;
 }
 
-void bdel(struct bgrid *grid){
+void bfree(struct bgrid *grid){
 	free(grid -> grid), free(grid);
 }

@@ -9,8 +9,8 @@ int main(){
 	setlocale(LC_CTYPE, "");
 	
 	const int sz = 64;
-	struct bgrid *grid = bgen(sz, sz);
-	bres(grid);
+	struct bgrid *grid = balloc(sz, sz);
+	bclear(grid);
 
 	for(int i=0; i<sz; ++i) for(int j=0; j<sz; ++j) bset(grid, j, i, (j&1)^(i&1));
 
@@ -29,9 +29,9 @@ int main(){
 	out[grid->width/2] = 0;
 
 	for(int i=0; i<grid->height/4; ++i){
-		for(int j=0; j<grid->width/2; ++j) out[j] = bat(grid, j, i);
+		for(int j=0; j<grid->width/2; ++j) out[j] = bchar(grid, j, i);
 		printf("%ls\n", out);
 	}
 
-	free(out), bdel(grid);
+	free(out), bfree(grid);
 }
