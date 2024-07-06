@@ -48,7 +48,7 @@ int _bgt(unsigned int *grid, int coord){
 	return (grid[coord>>5] >> (coord & 31)) & 1;
 }
 
-const int _ptmap = 0x76524130;
+const unsigned int _ptmap = 0x76524130;
 
 wchar_t bchar(struct bgrid *grid, int x, int y){
 	wchar_t ret = 0x2800;
