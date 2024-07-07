@@ -60,30 +60,6 @@ struct vec2 project(struct vec3 p, struct vec3 c){
 	return nvec2(px/pz, py/pz);
 }
 
-void line(int x0, int y0, int x1, int y1){
-	int dx = abs(x1 - x0),
-		sx = x0 < x1 ? 1 : -1,
-		dy = -abs(y1 - y0),
-		sy = y0 < y1 ? 1 : -1,
-		err = dx + dy;
-
-	while(1){
-		point(x0, y0, 1);
-		if(x0 == x1 && y0 == y1) break;
-		int e2 = 2 * err;
-		if(e2 >= dy){
-			if(x0 == x1) break;
-			err += dy;
-			x0 += sx;
-		}
-		if(e2 <= dx){
-			if(y0 == y1) break;
-			err += dx;
-			y0 += sy;
-		}
-	}
-}
-
 int main(){
 	initscr();
 

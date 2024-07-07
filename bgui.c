@@ -16,6 +16,8 @@ void endscr();
 
 // drawing utilities - set (x, y) to v [0 or 1]
 void point(int x, int y, int v);
+// line from (x0, y0) <-> (x1, y1)
+void line(int x0, int y0, int x1, int y1);
 // clear screen
 void clear();
 // write to terminal
@@ -23,23 +25,14 @@ void draw();
 
 // utilities - pause for t milliseconds
 void sleepms(int t);
-// manually read terminal size - called
-// automatically in initscr(), but necessary
-// if computation with dimensions takes
-// place beforehand
-void get_dimensions();
 
 int width, height;
-
-int dim_init = 0;
 
 void get_dimensions(){
 	struct winsize w;
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
 
 	height = w.ws_row*4, width = w.ws_col*2;
-
-	dim_init = 1;
 }
 
 void sleepms(int t){
@@ -71,7 +64,7 @@ struct bgrid *screen;
 void initscr(){
 	setlocale(LC_CTYPE, "");
 
-	if(!dim_init) get_dimensions();
+	get_dimensions();
 
 	screen = balloc(width, height);
 	bclear(screen);
@@ -88,6 +81,28 @@ void clear(){
 
 void point(int x, int y, int v){
 	bset(screen, x, y, v);
+}
+
+void line(int x0, int y0, int x1, int y1){
+	int dx = abs(x1 - x0),
+		sx = x0 < x1 ? 1 : -1,
+		dy = -abs(y1 - y0),
+		sy = y0 < y1 ? 1 : -1,
+		err = dx + dy;
+
+	while(1){
+		bset(screen, x0, y0, 1);
+		if(x0 == x1 && y0 == y1) break;
+		int e2 = 2 * err;
+		if(e2 >= dy){
+			if(x0 == x1) break;
+			err += dy, x0 += sx;
+		}
+		if(e2 <= dx){
+			if(y0 == y1) break;
+			err += dx, y0 += sy;
+		}
+	}
 }
 
 void draw(){

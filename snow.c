@@ -11,11 +11,6 @@ void sighandler(int s) {signal_status = s;}
 int main(){
 	srand(time(NULL));
 
-	get_dimensions();
-	printf("%d %d\n", width, height);
-
-	sleepms(300);
-
 	initscr();
 
 	int ct = width*height/400;
