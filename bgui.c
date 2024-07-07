@@ -91,12 +91,14 @@ void point(int x, int y, int v){
 }
 
 void draw(){
-	printf("\033[0;0H");
+	wchar_t out[1+height/4*width/2], *p = out;
 	
 	for(int i=0; i<height/4; ++i)
 		for(int j=0; j<width/2; ++j)
-			printf("%lc", bchar(screen, j, i));
+			*p = bchar(screen, j, i), ++p;
+	*p = 0;
 
+	printf("\033[0;0H%ls", out);
 	fflush(stdout);
 }
 
