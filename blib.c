@@ -18,16 +18,16 @@ void bfree(struct bgrid *grid);
 
 // braille grid structure
 struct bgrid{
-	unsigned int *grid;
-	int width, height, size;
+	unsigned long long int *grid;
+	unsigned int width, height, size;
 };
 
 struct bgrid* balloc(int width, int height){
 	struct bgrid *new = malloc(sizeof(struct bgrid));
 	new -> width = (1+(width-1)/2)<<1;
 	new -> height = (1+(height-1)/4)<<2;
-	new -> size = 1+(new->width*new->height-1>>5);
-	new -> grid = malloc(sizeof(unsigned int)*new->size);
+	new -> size = 1+(new->width*new->height-1>>6);
+	new -> grid = malloc(sizeof(unsigned long long int)*new->size);
 	return new;
 }
 
@@ -35,17 +35,17 @@ void bclear(struct bgrid *grid){
 	for(int i=0; i<grid->size; ++i) grid -> grid[i] = 0;
 }
 
-void _bwr(unsigned int *grid, int coord, int v){
-	if(v) grid[coord>>5] |= 1 << (coord & 31);
-	else grid[coord>>5] &= ~(1 << (coord & 31));
+void _bwr(unsigned long long int *grid, int coord, int v){
+	if(v) grid[coord>>6] |= 1ull << (coord & 63);
+	else grid[coord>>6] &= ~(1ull << (coord & 63));
 }
 
 void bset(struct bgrid *grid, int x, int y, int v){
 	_bwr(grid->grid, x + y*grid->width, v);
 }
 
-int _bgt(unsigned int *grid, int coord){
-	return (grid[coord>>5] >> (coord & 31)) & 1;
+int _bgt(unsigned long long int *grid, int coord){
+	return (grid[coord>>6] >> (coord & 63)) & 1;
 }
 
 const unsigned int _ptmap = 0x76524130;
