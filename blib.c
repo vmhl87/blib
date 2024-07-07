@@ -1,5 +1,4 @@
 #ifndef BLIB_EXISTS
-
 #define BLIB_EXISTS
 
 #include <stdlib.h>

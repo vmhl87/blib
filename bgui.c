@@ -1,3 +1,6 @@
+#ifndef BGUI_EXISTS
+#define BGUI_EXISTS
+
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <unistd.h>
@@ -6,6 +9,25 @@
 #include <time.h>
 
 #include "blib.c"
+
+// initialize / cleanup braille interface
+void initscr();
+void endscr();
+
+// drawing utilities - set (x, y) to v [0 or 1]
+void point(int x, int y, int v);
+// clear screen
+void clear();
+// write to terminal
+void draw();
+
+// utilities - pause for t milliseconds
+void sleepms(int t);
+// manually read terminal size - called
+// automatically in initscr(), but necessary
+// if computation with dimensions takes
+// place beforehand
+void get_dimensions();
 
 int width, height;
 
@@ -85,3 +107,5 @@ void endscr(){
 	fflush(stdout);
 	set_echo(1);
 }
+
+#endif
