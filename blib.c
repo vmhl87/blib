@@ -1,3 +1,7 @@
+#ifndef BLIB_EXISTS
+
+#define BLIB_EXISTS
+
 #include <stdlib.h>
 #include <wchar.h>
 
@@ -63,3 +67,5 @@ wchar_t bchar(struct bgrid *grid, int x, int y){
 void bfree(struct bgrid *grid){
 	free(grid -> grid), free(grid);
 }
+
+#endif
