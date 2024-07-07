@@ -29,7 +29,7 @@ struct bgrid* balloc(int width, int height){
 	struct bgrid *new = malloc(sizeof(struct bgrid));
 	new -> width = (1+(width-1)/2)<<1;
 	new -> height = (1+(height-1)/4)<<2;
-	new -> size = 1+(new->width*new->height-1>>6);
+	new -> size = 1+((new->width*new->height-1)>>6);
 	new -> grid = malloc(sizeof(unsigned long long int)*new->size);
 	return new;
 }

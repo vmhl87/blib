@@ -80,7 +80,8 @@ void clear(){
 }
 
 void point(int x, int y, int v){
-	bset(screen, x, y, v);
+	if(x >= 0 && y >= 0 && x < screen->width &&
+		y < screen->height) bset(screen, x, y, v);
 }
 
 void line(int x0, int y0, int x1, int y1){
@@ -91,7 +92,8 @@ void line(int x0, int y0, int x1, int y1){
 		err = dx + dy;
 
 	while(1){
-		bset(screen, x0, y0, 1);
+		if(x0 >= 0 && y0 >= 0 && x0 < screen->width &&
+			y0 < screen->height) bset(screen, x0, y0, 1);
 		if(x0 == x1 && y0 == y1) break;
 		int e2 = 2 * err;
 		if(e2 >= dy){
