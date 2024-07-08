@@ -41,7 +41,7 @@ struct vec2 vrotate(struct vec2 v, float r){
 // collider utils
 
 struct collider{
-	unsigned int ptc;
+	size_t ptc;
 	struct vec2 *pts;
 
 	float mass;
@@ -61,8 +61,8 @@ struct vec2 screenvel(struct collider *c, unsigned int i){
 }
 
 const float bounce = 0.1,
-	  friction = 0.5,
-	  rot_inert = 3.;
+	  friction = 0.3,
+	  rot_inert = 1.;
 
 void applyforce(struct collider *c, struct vec2 f, struct vec2 o){
 	c->v = vadd(c->v, f);
@@ -80,34 +80,34 @@ void iterate(struct collider *c, float dt){
 					v = screenvel(c, i);
 
 		if(p.y > height-2.5 && v.y > 0){
-			c->p.y += height-2.5 - p.y;
 			struct vec2 f = nvec2(v.x*-friction, -v.y*(1+bounce));
+			f.y += height-2.5 - p.y;
 			applyforce(c, f, vadd(p, vmult(c->p, -1)));
 		}
 
 		if(p.x > width-2.5 && v.x > 0){
-			c->p.x += width-2.5 - p.x;
 			struct vec2 f = nvec2(-v.x*(1+bounce), v.y*-friction);
+			f.x += width-2.5 - p.x;
 			applyforce(c, f, vadd(p, vmult(c->p, -1)));
 		}
 
 		if(p.y < 2.5 && v.y < 0){
-			c->p.y += 2.5 - p.y;
 			struct vec2 f = nvec2(v.x*-friction, -v.y*(1+bounce));
+			f.y += 2.5 - p.y;
 			applyforce(c, f, vadd(p, vmult(c->p, -1)));
 		}
 
 		if(p.x < 2.5 && v.x < 0){
-			c->p.x += 2.5 - p.x;
 			struct vec2 f = nvec2(-v.x*(1+bounce), v.y*-friction);
+			f.x += 2.5 - p.x;
 			applyforce(c, f, vadd(p, vmult(c->p, -1)));
 		}
 	}
 }
 
 void display(struct collider *c){
-	for(unsigned int i=0; i<c->ptc; ++i){
-		int o = c->ptc - 1;
+	for(size_t i=0; i<c->ptc; ++i){
+		size_t o = c->ptc - 1;
 		if(i) o = i-1;
 		
 		struct vec2 p1 = screenpos(c, i),
@@ -140,7 +140,7 @@ int main(){
 	square.a = 0.3;
 	square.r = 0;
 
-	square.mass = 100;
+	square.mass = 400;
 
 	struct collider s;
 
@@ -155,20 +155,36 @@ int main(){
 	s.v = nvec2(0, 0);
 	
 	s.a = 0;
-	s.r = 2;
+	s.r = 0.3;
 
-	s.mass = 30;
+	s.mass = 60;
+
+	struct collider circle;
+
+	circle.ptc = 32;
+	circle.pts = malloc(sizeof(struct vec2) * 32);
+
+	for(int i=0; i<32; ++i) circle.pts[i] = vrotate(nvec2(0, 8), PI/16.*i);
+
+	circle.p = nvec2(width/2 - 50, height/2);
+	circle.v = nvec2(0, 0);
+
+	circle.a = 0;
+	circle.r = -0.03;
+
+	circle.mass = 200;
 
 	signal(SIGINT, sighandler); signal_status = 0;
 	while(1){
 		if(signal_status == SIGINT) break;
 
 		for(int i=0; i<20; ++i)
-			iterate(&square, 0.05), iterate(&s, 0.05);
+			iterate(&square, 0.05), iterate(&s, 0.05), iterate(&circle, 0.05);
 
 		clear();
 		display(&square);
 		display(&s);
+		display(&circle);
 		draw();
 
 		sleepms(1000/60);
