@@ -84,6 +84,24 @@ void iterate(struct collider *c, float dt){
 			struct vec2 f = nvec2(v.x*-friction, -v.y*(1+bounce));
 			applyforce(c, f, vadd(p, vmult(c->p, -1)));
 		}
+
+		if(p.x > width-2.5 && v.x > 0){
+			c->p.x += width-2.5 - p.x;
+			struct vec2 f = nvec2(-v.x*(1+bounce), v.y*-friction);
+			applyforce(c, f, vadd(p, vmult(c->p, -1)));
+		}
+
+		if(p.y < 2.5 && v.y < 0){
+			c->p.y += 2.5 - p.y;
+			struct vec2 f = nvec2(v.x*-friction, -v.y*(1+bounce));
+			applyforce(c, f, vadd(p, vmult(c->p, -1)));
+		}
+
+		if(p.x < 2.5 && v.x < 0){
+			c->p.x += 2.5 - p.x;
+			struct vec2 f = nvec2(-v.x*(1+bounce), v.y*-friction);
+			applyforce(c, f, vadd(p, vmult(c->p, -1)));
+		}
 	}
 }
 
@@ -136,8 +154,8 @@ int main(){
 	s.p = nvec2(width/2+50, height/2);
 	s.v = nvec2(0, 0);
 	
-	s.a = 0.3;
-	s.r = 0;
+	s.a = 0;
+	s.r = 2;
 
 	s.mass = 30;
 
@@ -145,8 +163,8 @@ int main(){
 	while(1){
 		if(signal_status == SIGINT) break;
 
-		for(int i=0; i<10; ++i)
-			iterate(&square, 0.1), iterate(&s, 0.1);
+		for(int i=0; i<20; ++i)
+			iterate(&square, 0.05), iterate(&s, 0.05);
 
 		clear();
 		display(&square);
