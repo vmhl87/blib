@@ -39,6 +39,7 @@ int main(){
 		for(int x=0; x<width; ++x) for(int y=0; y<height; ++y)
 			point(x, y, old[x][y]);
 		draw();
+
 		sleepms(1000/30);
 	}
 

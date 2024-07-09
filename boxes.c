@@ -60,9 +60,9 @@ struct vec2 screenvel(struct collider *c, size_t i){
 	return vadd(c->v, vmult(vrotate(c->pts[i], c->a + PI/2.), c->r));
 }
 
-const float bounce = 0,
-	  friction = .3,
-	  damping = 100.;
+const float friction = .1,
+	  damping = 60.,
+	  gravity = 0.2;
 
 void applyforce(struct collider *c, struct vec2 f, struct vec2 o){
 	c->v = vadd(c->v, vmult(f, 1/c->mass));
@@ -73,35 +73,36 @@ void iterate(struct collider *c, float dt){
 	c->p = vadd(c->p, vmult(c->v, dt));
 	c->a += c->r*dt;
 
-	c->v.y += 0.07*dt;
+	c->v.y += gravity*dt;
 
 	for(size_t i=0; i<c->ptc; ++i){
 		struct vec2 p = screenpos(c, i),
 					v = screenvel(c, i);
 
-		if(p.y > height-.5)
-			applyforce(c, nvec2(0, -0.07*dt*c->mass), vadd(p, vmult(c->p, -1)));
+		//if(p.y > height-.5)
+			//applyforce(c, nvec2(0, -gravity*dt*c->mass), vadd(p, vmult(c->p, -1)));
 
 		if(p.y > height-.5 && v.y > 0){
-			struct vec2 f = nvec2(v.x*-friction, -v.y*(1+bounce));
+			struct vec2 f = nvec2(v.x*-friction, -v.y);
 			f = vmult(f, c->mass);
+			f.y += height-.5 - p.y;
 			applyforce(c, f, vadd(p, vmult(c->p, -1)));
 		}
 
 		if(p.x > width-.5 && v.x > 0){
-			struct vec2 f = nvec2(-v.x*(1+bounce), v.y*-friction);
+			struct vec2 f = nvec2(-v.x, v.y*-friction);
 			f = vmult(f, c->mass);
 			applyforce(c, f, vadd(p, vmult(c->p, -1)));
 		}
 
 		if(p.y < .5 && v.y < 0){
-			struct vec2 f = nvec2(v.x*-friction, -v.y*(1+bounce));
+			struct vec2 f = nvec2(v.x*-friction, -v.y);
 			f = vmult(f, c->mass);
 			applyforce(c, f, vadd(p, vmult(c->p, -1)));
 		}
 
 		if(p.x < .5 && v.x < 0){
-			struct vec2 f = nvec2(-v.x*(1+bounce), v.y*-friction);
+			struct vec2 f = nvec2(-v.x, v.y*-friction);
 			f = vmult(f, c->mass);
 			applyforce(c, f, vadd(p, vmult(c->p, -1)));
 		}
@@ -140,7 +141,7 @@ int main(){
 	square.p = nvec2(width/2, height/2);
 	square.v = nvec2(0, 0);
 	
-	square.a = 0.3;
+	square.a = 0.7;
 	square.r = 0;
 
 	square.mass = 400;
@@ -162,7 +163,7 @@ int main(){
 	s.r = -0.2;
 
 	s.mass = 60;
-	s.radius = 1;
+	s.radius = 2.5;
 
 	struct collider circle;
 
