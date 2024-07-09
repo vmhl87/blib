@@ -44,62 +44,65 @@ struct collider{
 	size_t ptc;
 	struct vec2 *pts;
 
-	float mass;
+	float mass, radius;
 
 	struct vec2 p, v;
 	float a, r;
 };
 
-struct vec2 screenpos(struct collider *c, unsigned int i){
+struct vec2 screenpos(struct collider *c, size_t i){
 	return vadd(c->p, vrotate(c->pts[i], c->a));
 }
 
-const float PI = 3.14159265;
+const float PI = 3.14159265358979;
 
-struct vec2 screenvel(struct collider *c, unsigned int i){
+struct vec2 screenvel(struct collider *c, size_t i){
 	return vadd(c->v, vmult(vrotate(c->pts[i], c->a + PI/2.), c->r));
 }
 
-const float bounce = 0.1,
-	  friction = 0.3,
-	  rot_inert = 1.;
+const float bounce = 0,
+	  friction = .3,
+	  damping = 100.;
 
 void applyforce(struct collider *c, struct vec2 f, struct vec2 o){
-	c->v = vadd(c->v, f);
-	c->r += (o.x*f.y - o.y*f.x) / rot_inert / c->mass;
+	c->v = vadd(c->v, vmult(f, 1/c->mass));
+	c->r += (o.x*f.y - o.y*f.x)/c->mass/c->radius/damping;
 }
 
 void iterate(struct collider *c, float dt){
-	c->v.y += 0.07*dt;
-
 	c->p = vadd(c->p, vmult(c->v, dt));
 	c->a += c->r*dt;
 
-	for(int i=0; i<c->ptc; ++i){
+	c->v.y += 0.07*dt;
+
+	for(size_t i=0; i<c->ptc; ++i){
 		struct vec2 p = screenpos(c, i),
 					v = screenvel(c, i);
 
-		if(p.y > height-2.5 && v.y > 0){
+		if(p.y > height-.5)
+			applyforce(c, nvec2(0, -0.07*dt*c->mass), vadd(p, vmult(c->p, -1)));
+
+		if(p.y > height-.5 && v.y > 0){
 			struct vec2 f = nvec2(v.x*-friction, -v.y*(1+bounce));
-			f.y += height-2.5 - p.y;
+			f = vmult(f, c->mass);
 			applyforce(c, f, vadd(p, vmult(c->p, -1)));
 		}
 
-		if(p.x > width-2.5 && v.x > 0){
+		if(p.x > width-.5 && v.x > 0){
 			struct vec2 f = nvec2(-v.x*(1+bounce), v.y*-friction);
-			f.x += width-2.5 - p.x;
+			f = vmult(f, c->mass);
 			applyforce(c, f, vadd(p, vmult(c->p, -1)));
 		}
 
-		if(p.y < 2.5 && v.y < 0){
+		if(p.y < .5 && v.y < 0){
 			struct vec2 f = nvec2(v.x*-friction, -v.y*(1+bounce));
-			f.y += 2.5 - p.y;
+			f = vmult(f, c->mass);
 			applyforce(c, f, vadd(p, vmult(c->p, -1)));
 		}
 
-		if(p.x < 2.5 && v.x < 0){
+		if(p.x < .5 && v.x < 0){
 			struct vec2 f = nvec2(-v.x*(1+bounce), v.y*-friction);
-			f.x += 2.5 - p.x;
+			f = vmult(f, c->mass);
 			applyforce(c, f, vadd(p, vmult(c->p, -1)));
 		}
 	}
@@ -129,10 +132,10 @@ int main(){
 	square.ptc = 4;
 	square.pts = malloc(sizeof(struct vec2) * 4);
 
-	square.pts[0] = nvec2(-10, -10);
-	square.pts[1] = nvec2(-10, 10);
-	square.pts[2] = nvec2(10, 10);
-	square.pts[3] = nvec2(10, -10);
+	square.pts[0] = nvec2(-20, -1);
+	square.pts[1] = nvec2(-20, 1);
+	square.pts[2] = nvec2(20, 1);
+	square.pts[3] = nvec2(20, -1);
 	
 	square.p = nvec2(width/2, height/2);
 	square.v = nvec2(0, 0);
@@ -141,6 +144,7 @@ int main(){
 	square.r = 0;
 
 	square.mass = 400;
+	square.radius = 12;
 
 	struct collider s;
 
@@ -155,9 +159,10 @@ int main(){
 	s.v = nvec2(0, 0);
 	
 	s.a = 0;
-	s.r = 0.3;
+	s.r = -0.2;
 
 	s.mass = 60;
+	s.radius = 1;
 
 	struct collider circle;
 
@@ -170,16 +175,20 @@ int main(){
 	circle.v = nvec2(0, 0);
 
 	circle.a = 0;
-	circle.r = -0.03;
+	circle.r = 0.03;
 
 	circle.mass = 200;
+	circle.radius = 24;
+
+	const int iterations = 10;
+	const float dt = 0.1;
 
 	signal(SIGINT, sighandler); signal_status = 0;
 	while(1){
 		if(signal_status == SIGINT) break;
 
-		for(int i=0; i<20; ++i)
-			iterate(&square, 0.05), iterate(&s, 0.05), iterate(&circle, 0.05);
+		for(int i=0; i<iterations; ++i)
+			iterate(&square, dt), iterate(&s, dt), iterate(&circle, dt);
 
 		clear();
 		display(&square);
